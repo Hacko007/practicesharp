@@ -9,7 +9,7 @@ using System.Windows.Forms;
 namespace BigMansStuff.PracticeSharp.UI
 {
     /// <summary>
-    /// A dialog that shows the keyboard shortctus image
+    /// A dialog that shows the keyboard shortcuts image
     /// </summary>
     public partial class KeyboardShortcutsForm : Form
     {

@@ -3,3 +3,10 @@
 ################################################################################
 
 /NAudioFLAC/Library/bin
+/NAudioFLAC/Library/obj
+/PracticeSharpApp/bin
+/PracticeSharpApp/obj/x86
+/NAudioOggVorbis/Library/bin
+/NAudioOggVorbis/Library/obj/x86
+*.suo
+/PracticeSharpApp/packages

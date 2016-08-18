@@ -49,7 +49,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 
@@ -59,7 +58,7 @@ namespace BigMansStuff.PracticeSharp.SoundTouch
     /// .NET C# Wrapper to the SoundTouch Native C++ Audio library
     /// </summary>
     /// <see cref="http://www.surina.net/soundtouch/index.html"/>
-    class SoundTouchSharp: IDisposable
+    class SoundTouchSharp : IDisposable
     {
         #region SoundTouch .NET wrapper API
 
@@ -204,7 +203,7 @@ namespace BigMansStuff.PracticeSharp.SoundTouch
         {
             VerifyInstanceInitialized();
 
-            soundtouch_setChannels(m_handle, (uint) numChannels);
+            soundtouch_setChannels(m_handle, (uint)numChannels);
         }
 
         /// <summary>
@@ -215,7 +214,7 @@ namespace BigMansStuff.PracticeSharp.SoundTouch
         {
             VerifyInstanceInitialized();
 
-            soundtouch_setSampleRate(m_handle, (uint) srate);
+            soundtouch_setSampleRate(m_handle, (uint)srate);
         }
 
         /// <summary>
@@ -260,20 +259,20 @@ namespace BigMansStuff.PracticeSharp.SoundTouch
         }
 
         /// <summary>
-        /// Changes a setting controlling the processing system behaviour. See the
+        /// Changes a setting controlling the processing system behavior. See the
         /// 'SETTING_...' defines for available setting ID's.
         /// 
-        /// \return 'TRUE' if the setting was succesfully changed
+        /// \return 'TRUE' if the setting was successfully changed
         /// </summary>
         public void SetSetting(SoundTouchSettings settingId, int value)
         {
             VerifyInstanceInitialized();
 
-            soundtouch_setSetting(m_handle, ( int ) settingId, value);
+            soundtouch_setSetting(m_handle, (int)settingId, value);
         }
 
         /// <summary>
-        /// Reads a setting controlling the processing system behaviour. 
+        /// Reads a setting controlling the processing system behavior. 
         /// See the 'SETTING_...' defines for available setting ID's.
         /// </summary>
         /// <param name="settingId"></param>
@@ -282,7 +281,7 @@ namespace BigMansStuff.PracticeSharp.SoundTouch
         {
             VerifyInstanceInitialized();
 
-            return soundtouch_getSetting(m_handle, ( int ) settingId);
+            return soundtouch_getSetting(m_handle, (int)settingId);
         }
 
         /// <summary>
@@ -348,7 +347,7 @@ namespace BigMansStuff.PracticeSharp.SoundTouch
             /// Pitch transposer anti-alias filter length (8 .. 128 taps, default = 32)
             /// </summary>
             SETTING_AA_FILTER_LENGTH = 1,
-            
+
             /// <summary>
             /// Enable/disable quick seeking algorithm in tempo changer routine
             /// (enabling quick seeking lowers CPU utilization but causes a minor sound
@@ -520,13 +519,13 @@ SOUNDTOUCHDLL_API int __stdcall soundtouch_isEmpty(HANDLE h);
 
         [DllImport(SoundTouchDLLName)]
         internal static extern void soundtouch_setRateChange(IntPtr h, float newRate);
-        
+
         [DllImport(SoundTouchDLLName)]
         internal static extern void soundtouch_setTempoChange(IntPtr h, float newTempo);
-       
+
         [DllImport(SoundTouchDLLName)]
         internal static extern void soundtouch_setPitch(IntPtr h, float newPitch);
-       
+
         [DllImport(SoundTouchDLLName)]
         internal static extern void soundtouch_setPitchOctaves(IntPtr h, float newPitch);
 
@@ -542,7 +541,7 @@ SOUNDTOUCHDLL_API int __stdcall soundtouch_isEmpty(HANDLE h);
 
         [DllImport(SoundTouchDLLName)]
         internal static extern void soundtouch_flush(IntPtr h);
-        
+
         [DllImport(SoundTouchDLLName)]
         internal static extern void soundtouch_putSamples(IntPtr h, [MarshalAs(UnmanagedType.LPArray)] float[] samples, uint numSamples);
 
@@ -557,7 +556,7 @@ SOUNDTOUCHDLL_API int __stdcall soundtouch_isEmpty(HANDLE h);
 
         [DllImport(SoundTouchDLLName)]
         internal static extern int soundtouch_numUnprocessedSamples(IntPtr h);
-        
+
         [DllImport(SoundTouchDLLName)]
         internal static extern uint soundtouch_receiveSamples(IntPtr h, [MarshalAs(UnmanagedType.LPArray)] float[] outBuffer, uint maxSamples);
 
@@ -591,7 +590,7 @@ SOUNDTOUCHDLL_API int __stdcall soundtouch_isEmpty(HANDLE h);
                 throw new ApplicationException("SoundTouch as not initialized. Use CreateInstance()");
             }
         }
-        
+
         #endregion
 
         #region Members

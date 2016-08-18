@@ -23,15 +23,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using BigMansStuff.PracticeSharp.Core;
 using System.IO;
 using System.Threading;
-using System.Xml;
 using System.Configuration;
 using System.Diagnostics;
 using NLog;
@@ -44,7 +40,7 @@ namespace BigMansStuff.PracticeSharp.UI
     public partial class MainForm : Form
     {
         #region Logger
-        private static Logger m_logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger m_logger = LogManager.GetCurrentClassLogger();
         #endregion
 
         #region Construction
@@ -56,7 +52,7 @@ namespace BigMansStuff.PracticeSharp.UI
         {
             InitializeComponent();
         }
-      
+
         /// <summary>
         /// Form loading event handler
         /// </summary>
@@ -114,11 +110,11 @@ namespace BigMansStuff.PracticeSharp.UI
             // Create the PracticeSharpLogic back end layer
             m_practiceSharpLogic = new PracticeSharpLogic();
             m_practiceSharpLogic.Initialize();
-            m_practiceSharpLogic.StatusChanged += new PracticeSharpLogic.StatusChangedEventHandler(practiceSharpLogic_StatusChanged);
-            m_practiceSharpLogic.PlayTimeChanged += new EventHandler(practiceSharpLogic_PlayTimeChanged);
-            m_practiceSharpLogic.CueWaitPulsed += new EventHandler(practiceSharpLogic_CueWaitPulsed);
+            m_practiceSharpLogic.StatusChanged += practiceSharpLogic_StatusChanged;
+            m_practiceSharpLogic.PlayTimeChanged += practiceSharpLogic_PlayTimeChanged;
+            m_practiceSharpLogic.CueWaitPulsed += practiceSharpLogic_CueWaitPulsed;
 
-            EnableControls( false );
+            EnableControls(false);
 
             openFileDialog.InitialDirectory = Properties.Settings.Default.LastAudioFolder;
             openFileDialog.FilterIndex = Properties.Settings.Default.LastFilterIndex;
@@ -129,15 +125,17 @@ namespace BigMansStuff.PracticeSharp.UI
             openFileButton.Image = Resources.OpenFile_icon;
 
             cueComboBox.SelectedIndex = 0;
-            m_presetControls = new Dictionary<string, PresetControl>();
-            m_presetControls.Add("1", presetControl1);
-            m_presetControls.Add("2", presetControl2);
-            m_presetControls.Add("3", presetControl3);
-            m_presetControls.Add("4", presetControl4);
-            m_presetControls.Add("5", presetControl5);
-            m_presetControls.Add("6", presetControl6);
-            m_presetControls.Add("7", presetControl7);
-            m_presetControls.Add("8", presetControl8);
+            m_presetControls = new Dictionary<string, PresetControl>
+            {
+                { "1", presetControl1 },
+                { "2", presetControl2 },
+                { "3", presetControl3 },
+                { "4", presetControl4 },
+                { "5", presetControl5 },
+                { "6", presetControl6 },
+                { "7", presetControl7 },
+                { "8", presetControl8 }
+            };
 
             // Set defaults
             tempoTrackBar_ValueChanged(this, new EventArgs());
@@ -174,18 +172,18 @@ namespace BigMansStuff.PracticeSharp.UI
             // Select default profile
             timeStretchProfileComboBox.SelectedIndex = defaultProfileIndex;
         }
-       
+
         /// <summary>
         /// Initializes the Most-Recently-Used files
         /// </summary>
         private void InitializeMRUFiles()
         {
-            m_recentFilesMenuItems.AddRange(new ToolStripMenuItem[] { 
+            m_recentFilesMenuItems.AddRange(new ToolStripMenuItem[] {
                         recent1ToolStripMenuItem,  recent2ToolStripMenuItem, recent3ToolStripMenuItem, recent4ToolStripMenuItem, recent5ToolStripMenuItem,
                         recent6ToolStripMenuItem, recent7ToolStripMenuItem, recent8ToolStripMenuItem });
             foreach (ToolStripMenuItem recentMenuItem in m_recentFilesMenuItems)
             {
-                recentMenuItem.Click += new EventHandler(recentMenuItem_Click);
+                recentMenuItem.Click += recentMenuItem_Click;
             }
 
             m_mruFile = m_appDataFolder + "\\practicesharp_mru.txt";
@@ -210,7 +208,7 @@ namespace BigMansStuff.PracticeSharp.UI
             string appVersionConfigSetting = Properties.Settings.Default.ApplicationVersion;
             if (appVersionConfigSetting != m_appVersion.ToString())
             {
-                m_logger.Info("Old application version (" + appVersionConfigSetting + "), Settings upgrades is required" );
+                m_logger.Info("Old application version (" + appVersionConfigSetting + "), Settings upgrades is required");
                 Properties.Settings.Default.Upgrade();
                 Properties.Settings.Default.ApplicationVersion = appVersionString;
                 Properties.Settings.Default.Save();
@@ -249,7 +247,7 @@ namespace BigMansStuff.PracticeSharp.UI
 
             // Workaround for older Windows (XP or less) that don't have  LOCALAPPDATA environment variable
             // This environment variable is used by NLog layout renderer (NLog.config)
-            Environment.SetEnvironmentVariable("PracticeSharpLogFolder", m_appDataFolder );
+            Environment.SetEnvironmentVariable("PracticeSharpLogFolder", m_appDataFolder);
         }
 
         #endregion
@@ -299,20 +297,20 @@ namespace BigMansStuff.PracticeSharp.UI
         private void MainForm_KeyPress(object sender, KeyPressEventArgs e)
         {
             // [ Pitch Down
-            if (e.KeyChar == '[' )
-            {              
+            if (e.KeyChar == '[')
+            {
                 pitchTrackBar.Value = Math.Max(pitchTrackBar.Value - pitchTrackBar.SmallChange, pitchTrackBar.Minimum);
                 e.Handled = true;
             }
             // ] Pitch Up
-            else if (e.KeyChar == ']' )
+            else if (e.KeyChar == ']')
             {
                 pitchTrackBar.Value = Math.Min(pitchTrackBar.Value + pitchTrackBar.SmallChange, pitchTrackBar.Maximum);
 
                 e.Handled = true;
             }
             // > - Jump forward: Start
-            else if ( e.KeyChar == '>' || e.KeyChar == '.')
+            else if (e.KeyChar == '>' || e.KeyChar == '.')
             {
                 if (!m_jumpMode)
                 {
@@ -370,14 +368,14 @@ namespace BigMansStuff.PracticeSharp.UI
                 volumeTrackBar.Value = Math.Min(volumeTrackBar.Value + volumeTrackBar.SmallChange, volumeTrackBar.Maximum);
                 e.Handled = true;
             }
-            else if (e.KeyChar.ToString().ToUpper() == "V" )
+            else if (e.KeyChar.ToString().ToUpper() == "V")
             {
                 // Toggle remove vocals mode
                 removeVocalsCheckBox.Checked = !removeVocalsCheckBox.Checked;
                 e.Handled = true;
             }
-  
-        } 
+
+        }
 
         /// <summary>
         /// Central key handler - KeyUp (when is released)
@@ -387,7 +385,7 @@ namespace BigMansStuff.PracticeSharp.UI
         private void MainForm_KeyUp(object sender, KeyEventArgs e)
         {
             // Jump Mode (< or >): End
-            if (!e.Control && !e.Alt && !e.Shift && ( e.KeyValue == 190 || e.KeyValue == 188) )
+            if (!e.Control && !e.Alt && !e.Shift && (e.KeyValue == 190 || e.KeyValue == 188))
             {
                 m_jumpMode = false;
 
@@ -556,7 +554,7 @@ namespace BigMansStuff.PracticeSharp.UI
             appLogFilename = appLogFilename.Replace("${environment:PracticeSharpLogFolder}", m_appDataFolder);
             Process.Start("notepad.exe", appLogFilename);
         }
-        
+
         /// <summary>
         /// Play/Pause button click event handler - Plays or Pauses the current play back of the file
         /// </summary>
@@ -569,8 +567,8 @@ namespace BigMansStuff.PracticeSharp.UI
                 playPauseButton.Image = Resources.Play_Hot;
                 m_practiceSharpLogic.Pause();
             }
-            else if ( (m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Pausing ) ||
-                      (m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Ready) )
+            else if ((m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Pausing) ||
+                      (m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Ready))
             {
                 playPauseButton.Image = Resources.Pause_Hot;
 
@@ -580,12 +578,12 @@ namespace BigMansStuff.PracticeSharp.UI
 
                 m_practiceSharpLogic.Play();
             }
-            else if ( m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Stopped )
+            else if (m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Stopped)
             {
                 // Playing has stopped, need to reload the file
                 if (playTimeTrackBar.Value == playTimeTrackBar.Maximum)
                     playTimeTrackBar.Value = playTimeTrackBar.Minimum;
-                m_practiceSharpLogic.LoadFile( m_currentFilename );
+                m_practiceSharpLogic.LoadFile(m_currentFilename);
 
                 playPauseButton.Image = Resources.Pause_Hot;
                 m_practiceSharpLogic.Play();
@@ -615,7 +613,7 @@ namespace BigMansStuff.PracticeSharp.UI
         {
             if (m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Playing)
                 playPauseButton.Image = Resources.Pause_Normal;
-            else if (m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Pausing || 
+            else if (m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Pausing ||
                      m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Stopped)
                 playPauseButton.Image = Resources.Play_Normal;
 
@@ -632,11 +630,11 @@ namespace BigMansStuff.PracticeSharp.UI
             if (m_practiceSharpLogic == null
                 || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Initializing
                 || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Terminating
-                || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Terminated )
+                || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Terminated)
             {
                 return;
             }
-            
+
 
             TimeSpan startMarker = m_practiceSharpLogic.StartMarker;
             TimeSpan endMarker = m_practiceSharpLogic.EndMarker;
@@ -656,7 +654,7 @@ namespace BigMansStuff.PracticeSharp.UI
             }
 
             // Draw the whole loop region - Start marker to End Marker
-            e.Graphics.FillRectangle(Brushes.Wheat, startMarkerX, 0, 
+            e.Graphics.FillRectangle(Brushes.Wheat, startMarkerX, 0,
                                                              endMarkerX - startMarkerX, MarkerHeight);
             // Draw just the start marker
             e.Graphics.FillRectangle(Brushes.LightGreen, startMarkerX, 0, MarkerWidth, MarkerHeight);
@@ -743,7 +741,7 @@ namespace BigMansStuff.PracticeSharp.UI
                 }
 
                 PresetData presetData = m_currentPreset.PresetData;
-            
+
                 ApplyPresetValueUIControls(presetData);
             }
             finally
@@ -751,7 +749,7 @@ namespace BigMansStuff.PracticeSharp.UI
                 if (isPlaying) m_practiceSharpLogic.Play();
             }
         }
-        
+
         /// <summary>
         /// PresetDescriptionChanged Event handler - When a preset description changed the preset bank has to be rewritten to persist the change
         /// </summary>
@@ -813,7 +811,7 @@ namespace BigMansStuff.PracticeSharp.UI
             float newVolume = volumeTrackBar.Value / 100.0f;
             m_practiceSharpLogic.Volume = newVolume;
 
-            volumeValueLabel.Text = ( newVolume * 100 ).ToString() + "%";
+            volumeValueLabel.Text = (newVolume * 100).ToString() + "%";
         }
 
         /// <summary>
@@ -912,7 +910,7 @@ namespace BigMansStuff.PracticeSharp.UI
             // Mask out PracticeSharpLogic events to eliminate 'Racing' between GUI and PracticeSharpLogic over current playtime
             TempMaskOutCurrentControls();
 
-            UpdateCoreCurrentPlayTime( ref currentPlayTime );
+            UpdateCoreCurrentPlayTime(ref currentPlayTime);
 
             if (m_practiceSharpLogic.Status != PracticeSharpLogic.Statuses.Playing)
             {
@@ -975,7 +973,7 @@ namespace BigMansStuff.PracticeSharp.UI
             float newTempo = tempoTrackBar.Value / 100.0f;
             // Assign new Tempo
             m_practiceSharpLogic.Tempo = newTempo;
-            
+
             // Update speed value label
             if (newTempo != 1.0f)
                 speedValueLabel.ForeColor = Color.Blue;
@@ -992,11 +990,11 @@ namespace BigMansStuff.PracticeSharp.UI
         /// <param name="e"></param>
         private void pitchTrackBar_ValueChanged(object sender, EventArgs e)
         {
-            if ( m_practiceSharpLogic == null)
+            if (m_practiceSharpLogic == null)
                 return;
 
             // Convert to Percent 
-            float newPitchSemiTones = pitchTrackBar.Value / ( float ) TicksPerSemitone;
+            float newPitchSemiTones = pitchTrackBar.Value / (float)TicksPerSemitone;
 
             if (m_practiceSharpLogic != null)
             {
@@ -1044,7 +1042,7 @@ namespace BigMansStuff.PracticeSharp.UI
                 pitchValueLabel.ForeColor = Color.Black;
 
             pitchValueLabel.Text = pitchValue;
-        } 
+        }
 
         /// <summary>
         /// speedLabel Click event handler - Reset the tempo to default value
@@ -1053,7 +1051,7 @@ namespace BigMansStuff.PracticeSharp.UI
         /// <param name="e"></param>
         private void speedLabel_Click(object sender, EventArgs e)
         {
-            tempoTrackBar.Value = Convert.ToInt32( PresetData.DefaultTempo * 100 );
+            tempoTrackBar.Value = Convert.ToInt32(PresetData.DefaultTempo * 100);
         }
 
         /// <summary>
@@ -1073,7 +1071,7 @@ namespace BigMansStuff.PracticeSharp.UI
         /// <param name="e"></param>
         private void pitchLabel_Click(object sender, EventArgs e)
         {
-              pitchTrackBar.Value = Convert.ToInt32( PresetData.DefaultPitch );
+            pitchTrackBar.Value = Convert.ToInt32(PresetData.DefaultPitch);
         }
 
         /// <summary>
@@ -1082,7 +1080,7 @@ namespace BigMansStuff.PracticeSharp.UI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void positionLabel_Click(object sender, EventArgs e)
-        {        
+        {
             m_practiceSharpLogic.ResetCurrentPlayTime();
 
             // When not in play mode, track bar does not get updated so update manually
@@ -1091,7 +1089,7 @@ namespace BigMansStuff.PracticeSharp.UI
                 UpdatePlayTimeTrackBarCurrentValue();
             }
         }
-    
+
         /// <summary>
         /// Toggle the loop mode On/Off
         /// </summary>
@@ -1130,10 +1128,11 @@ namespace BigMansStuff.PracticeSharp.UI
         /// <param name="e"></param>
         private void keyboardShortcutsMenuItem_Click(object sender, EventArgs e)
         {
-            using (KeyboardShortcutsForm form = new KeyboardShortcutsForm())
+            if (m_keyboardShortcutsForm == null)
             {
-                form.ShowDialog(this);
+                m_keyboardShortcutsForm = new KeyboardShortcutsForm();
             }
+            m_keyboardShortcutsForm.Show(this);
         }
 
         /// <summary>
@@ -1408,7 +1407,7 @@ namespace BigMansStuff.PracticeSharp.UI
         {
             if (m_practiceSharpLogic == null)
                 return;
-            
+
             TimeSpan startMarker = m_practiceSharpLogic.StartMarker;
 
             if (startLoopMilliUpDown.Value < 0)
@@ -1708,19 +1707,19 @@ namespace BigMansStuff.PracticeSharp.UI
         /// <param name="newStatus"></param>
         private void practiceSharpLogic_StatusChanged(object sender, PracticeSharpLogic.Statuses newStatus)
         {
-            if ( m_jumpMode || m_practiceSharpLogic == null || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Terminating || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Terminated)
+            if (m_jumpMode || m_practiceSharpLogic == null || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Terminating || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Terminated)
                 return;
-            
-            this.BeginInvoke(new MethodInvoker(delegate()
+
+            this.BeginInvoke(new MethodInvoker(delegate ()
             {
                 if (m_practiceSharpLogic == null || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Terminating || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Terminated)
                     return;
 
                 appStatusLabel.Text = newStatus.ToString();
 
-                if ( (newStatus == PracticeSharpLogic.Statuses.Stopped)
+                if ((newStatus == PracticeSharpLogic.Statuses.Stopped)
                    || (newStatus == PracticeSharpLogic.Statuses.Pausing)
-                   || (newStatus == PracticeSharpLogic.Statuses.Error) )
+                   || (newStatus == PracticeSharpLogic.Statuses.Error))
                 {
                     playPauseButton.Image = Resources.Play_Normal;
                     playTimeUpdateTimer.Enabled = false;
@@ -1743,7 +1742,7 @@ namespace BigMansStuff.PracticeSharp.UI
                     playPauseButton.Image = Resources.Pause_Normal;
                     playTimeUpdateTimer.Enabled = true;
                 }
-            } )
+            })
             );
         }
 
@@ -1753,7 +1752,7 @@ namespace BigMansStuff.PracticeSharp.UI
                 return;
 
             this.Invoke(
-                new MethodInvoker(delegate()
+                new MethodInvoker(delegate ()
                 {
                     m_isUpdatePlayTimeNeeded = true;
                 }));
@@ -1766,7 +1765,7 @@ namespace BigMansStuff.PracticeSharp.UI
 
             this.BeginInvoke(
 
-                new MethodInvoker(delegate()
+                new MethodInvoker(delegate ()
                 {
                     if (m_practiceSharpLogic == null || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Terminating || m_practiceSharpLogic.Status == PracticeSharpLogic.Statuses.Terminated)
                         return;
@@ -1827,15 +1826,15 @@ namespace BigMansStuff.PracticeSharp.UI
                 // Reset current UI Controls
                 foreach (PresetControl presetControl in m_presetControls.Values)
                 {
-                    presetControl.Reset( false );
+                    presetControl.Reset(false);
                 }
                 ApplyPresetValueUIControls(m_presetControls["1"].PresetData);
                 m_currentFilename = filename;
-                filenameLabel.Text = Path.GetFileName( filename );
+                filenameLabel.Text = Path.GetFileName(filename);
                 m_practiceSharpLogic.LoadFile(filename);
 
                 // Load Presets Bank for this input file
-                m_presetBankFile = new PresetBankFile(m_appDataFolder,m_appVersion.ToString(),m_currentFilename);
+                m_presetBankFile = new PresetBankFile(m_appDataFolder, m_appVersion.ToString(), m_currentFilename);
                 string activePresetId = m_presetBankFile.LoadPresetsBank(m_presetControls);
 
                 // If no preset is active, select the first one by default
@@ -1905,17 +1904,17 @@ namespace BigMansStuff.PracticeSharp.UI
         /// <summary>
         /// Updates the CurrentPlayTime from the UI Current controls
         /// </summary>
-        private void UpdateCoreCurrentPlayTime( ref TimeSpan currentPlayTime )
+        private void UpdateCoreCurrentPlayTime(ref TimeSpan currentPlayTime)
         {
             // Clip to actual file duration limits (0..FilePlayDuration)
-            if ( currentPlayTime > m_practiceSharpLogic.FilePlayDuration )
+            if (currentPlayTime > m_practiceSharpLogic.FilePlayDuration)
                 currentPlayTime = m_practiceSharpLogic.FilePlayDuration;
             else if (currentPlayTime < TimeSpan.Zero)
                 currentPlayTime = TimeSpan.Zero;
 
             m_practiceSharpLogic.CurrentPlayTime = currentPlayTime;
 
-            UpdateCurrentUpDownControls( currentPlayTime );
+            UpdateCurrentUpDownControls(currentPlayTime);
         }
 
         /// <summary>
@@ -2040,8 +2039,8 @@ namespace BigMansStuff.PracticeSharp.UI
         private void UpdateHorizontalTrackBarByMousePosition(TrackBar trackBar, MouseEventArgs e)
         {
             const int TrackBarMargin = 10;
-            int maxValue = Convert.ToInt32( trackBar.Maximum );
-            int minValue = Convert.ToInt32( trackBar.Minimum );
+            int maxValue = Convert.ToInt32(trackBar.Maximum);
+            int minValue = Convert.ToInt32(trackBar.Minimum);
             int newValue = Convert.ToInt32(minValue + (maxValue - minValue) * (((float)e.X - TrackBarMargin) / (trackBar.Width - TrackBarMargin * 2)));
 
             // Make value 'sticky' - it can only get a tick value
@@ -2050,7 +2049,7 @@ namespace BigMansStuff.PracticeSharp.UI
                 newValue = newValue + Math.Sign(mod) * trackBar.SmallChange - mod;
             else
                 newValue = newValue - mod;
-            
+
             // Limit new values
             if (newValue > maxValue)
                 newValue = maxValue;
@@ -2162,7 +2161,7 @@ namespace BigMansStuff.PracticeSharp.UI
             TempMaskOutPlayTimeTrackBar();
             TempMaskOutCurrentControls();
 
-            m_practiceSharpLogic.CurrentPlayTime = m_practiceSharpLogic.CurrentPlayTime.Add(new TimeSpan(0, 0, JumpSeconds));            
+            m_practiceSharpLogic.CurrentPlayTime = m_practiceSharpLogic.CurrentPlayTime.Add(new TimeSpan(0, 0, JumpSeconds));
 
             // When not in play mode, track bar does not get updated so update manually
             if (m_practiceSharpLogic.Status != PracticeSharpLogic.Statuses.Playing)
@@ -2231,7 +2230,7 @@ namespace BigMansStuff.PracticeSharp.UI
                 }
 
                 // Set the PlayTimeTrackBar value to the preset's CurrentPlayTime
-                
+
                 playTimeTrackBar.Value = Convert.ToInt32(100.0f * presetData.CurrentPlayTime.TotalSeconds / m_practiceSharpLogic.FilePlayDuration.TotalSeconds);
             }
 
@@ -2247,7 +2246,7 @@ namespace BigMansStuff.PracticeSharp.UI
             positionMarkersPanel.Refresh();
 
             // Find matching Time Stretch Profile
-            for ( int itemIndex = 0; itemIndex < timeStretchProfileComboBox.Items.Count; itemIndex++ )
+            for (int itemIndex = 0; itemIndex < timeStretchProfileComboBox.Items.Count; itemIndex++)
             {
                 TimeStretchProfile profile = timeStretchProfileComboBox.Items[itemIndex] as TimeStretchProfile;
                 if (profile.Id == presetData.TimeStretchProfile.Id)
@@ -2355,12 +2354,13 @@ namespace BigMansStuff.PracticeSharp.UI
 
         private PracticeSharpLogic.Statuses m_preJumpStatus;
         private bool m_jumpMode = false;
+        private KeyboardShortcutsForm m_keyboardShortcutsForm;
 
         #endregion
 
         #region Constants
 
-        const int MarkerWidth = 5; 
+        const int MarkerWidth = 5;
         const int MarkerHeight = 10;
 
         const int MaxRecentDisplayLength = 60;
